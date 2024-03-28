@@ -29,7 +29,7 @@ plt.show()
 
 sorted_pathway_counts = sorted(pathway_counts.items(), key=lambda x: x[1], reverse=True)
 
-output_file_path = '/mnt/data/sorted_pathway_counts.txt'
+output_file_path = '../sorted_pathway_counts.txt'
 with open(output_file_path, 'w') as f:
     for pathway, count in sorted_pathway_counts:
         f.write(f'{pathway}\t{count}\n')

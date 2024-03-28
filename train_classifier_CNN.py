@@ -136,7 +136,7 @@ num_classes = 2
 cell_count = 30000
 ch_count = 6
 
-do_process_data = True
+do_process_data = False
 
 if do_process_data:
     all_data, all_labels = process_raw_data(cell_count=cell_count, input_path=input_path, metadata=metadata,
