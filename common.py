@@ -85,6 +85,7 @@ def read_FCS(fcs_filename):
         except ValueError:
             continue
 
+    # ?
     df_fluoro = sample.as_dataframe(source='xform', subsample=False)[fluoro_channels]
 
     data_cells = np.array(df_fluoro[bool_singlecells])

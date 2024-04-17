@@ -58,17 +58,25 @@ class cnn_model_2D(nn.Module):
     def __init__(self):
         super(cnn_model_2D, self).__init__()
         self.conv1 = nn.Conv2d(1, 12, [1, ch_count])
+        # self.conv1 = nn.Conv2d(1, 32, [1, ch_count])
+
         self.relu = nn.ReLU()
+
         self.sigmoid = nn.Sigmoid()
         # self.pool1 = nn.AvgPool2d([1,2])
         self.conv2 = nn.Conv2d(12, 24, [1, 1])
+        # self.conv2 = nn.Conv2d(32, 64, [1, 1])
+
         # self.pool2 = nn.AvgPool2d([1,2])
         # self.conv3 = nn.Conv2d(16, 32, [1,2])
 
         self.pool3 = nn.AvgPool2d([cell_count, 1])
+        # self.pool3 = nn.MaxPool2d([cell_count, 1])
 
         # self.fc1 = nn.Linear(17280, 600)
         self.fc1 = nn.Linear(24, 2)
+        # self.fc1 = nn.Linear(64, 2)
+
         # self.fc2 = nn.Linear(20, 2)
 
     def forward(self, x):
@@ -205,9 +213,12 @@ test_dataloader = DataLoader(test_data, batch_size=1, shuffle=False)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=LR)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.9)
 # optimizer = optim.SGD(model.parameters(), lr=1e-1, weight_decay=0.0001)
 
 best_accuracy = 0
+train_loss_list = []
+valid_loss_list = []
 
 for epoch in range(max_epochs):
 
@@ -238,6 +249,9 @@ for epoch in range(max_epochs):
         batch_loss += loss.item()
 
     print('train loss: ', batch_loss / len(train_dataloader))
+    train_loss_list.append(batch_loss / len(train_dataloader))
+
+    scheduler.step()
 
     valid_loss = 0.0
     model.eval()  # Optional when not using Model Specific layer
@@ -259,6 +273,8 @@ for epoch in range(max_epochs):
         total += y_t.size(0)
 
     print('validation loss: ', valid_loss / len(test_dataloader))
+    valid_loss_list.append(valid_loss / len(test_dataloader))
+
     accuracy = correct / total
     print("Accuracy = {}".format(accuracy))
 
@@ -293,3 +309,11 @@ accuracy = correct / total
 print("Accuracy = {}".format(accuracy))
 
 print("Model finished training")
+
+plt.plot(train_loss_list, label='Training Loss')
+plt.plot(valid_loss_list, label='Validation Loss')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
