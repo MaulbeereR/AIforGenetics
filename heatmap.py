@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 from scipy.signal import savgol_filter
 import flowkit as fk
 from matplotlib.patches import Polygon
@@ -29,23 +30,24 @@ scattering_channels = ['FSC-A', 'FSC-H', 'FSC-W', 'SSC-A', 'SSC-H', 'SSC-W']
 antibody_channels = ['IgM', 'IgD', 'B220', 'CD44', 'CD3', 'CD4']
 
 raw_data = np.load('../dataset/all_data_V4.npy', allow_pickle=True)
-output_path = '../output/'
+output_path = '../80_80_output/'
 
 print('raw_data.shape: ', raw_data.shape)
 # shape: (2525, 30000, 6)
 
 
-def plot_heatmap(data, num, antibody_x, antibody_y, resolution=(80, 80)):
+def plot_heatmap(data, n, antibody_x, antibody_y, res):
     x = data[:, antibody_x]
     y = data[:, antibody_y]
 
-    bins = resolution
+    bins = (res, res)
 
     inches_per_bin = 10
     fig, ax = plt.subplots()
-    fig.set_size_inches(resolution[0] / inches_per_bin, resolution[1] / inches_per_bin)
+    fig.set_size_inches(res / inches_per_bin, res / inches_per_bin)
 
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
+
     z = interpn((0.5 * (x_e[1:] + x_e[:-1]), 0.5 * (y_e[1:] + y_e[:-1])), data, np.vstack([x, y]).T, method="splinef2d",
                 bounds_error=False)
 
@@ -54,20 +56,22 @@ def plot_heatmap(data, num, antibody_x, antibody_y, resolution=(80, 80)):
     idx = z.argsort()
     x, y, z = x[idx], y[idx], z[idx]
 
-    norm = Normalize(vmin=np.min(z), vmax=np.max(z) * 0.25)
+    # norm = Normalize(vmin=np.min(z), vmax=np.max(z) * 0.25)
+    # ax.scatter(x, y, c=z, s=0.2, norm=norm)
 
-    ax.scatter(x, y, c=z, s=0.2, norm=norm)
+    ax.scatter(x, y, c=z, s=0.2, cmap='gray')
 
     ax.set_axis_off()
 
-    output_filename = 'data' + str(num) + '_' + str(antibody_x) + '_' + str(antibody_y) + '.png'
-    dpi = inches_per_bin * resolution[0] / 80
-    fig.savefig(output_path + output_filename, bbox_inches='tight', pad_inches=0, dpi=dpi)
+    output_filename = 'data' + str(n) + '_' + str(antibody_x) + '_' + str(antibody_y) + '.png'
+    dpi = inches_per_bin
+    fig.savefig(output_path + output_filename, pad_inches=0, dpi=dpi)
     plt.close(fig)
 
 
 pairs = list(combinations(range(6), 2))
-for num in range(2):
+for num in range(len(raw_data)):
     for i, j in pairs:
-        plot_heatmap(raw_data[num], num, i, j)
+        plot_heatmap(raw_data[num], num, i, j, 80)
+    print(num)
 
