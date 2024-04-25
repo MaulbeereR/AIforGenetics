@@ -30,7 +30,7 @@ scattering_channels = ['FSC-A', 'FSC-H', 'FSC-W', 'SSC-A', 'SSC-H', 'SSC-W']
 antibody_channels = ['IgM', 'IgD', 'B220', 'CD44', 'CD3', 'CD4']
 
 raw_data = np.load('../dataset/all_data_V4.npy', allow_pickle=True)
-output_path = '../80_80_output/'
+output_path = '../output/80_80_output/'
 
 print('raw_data.shape: ', raw_data.shape)
 # shape: (2525, 30000, 6)

@@ -19,13 +19,15 @@ from torch.utils.data import Dataset, random_split
 import torch.optim as optim
 from torchvision.transforms import ToTensor
 import torch.nn.functional as F
+from torchvision import transforms
 import random
 import json
 import os
 import math
+
 from itertools import combinations
 
-labels_sex = np.load('../dataset/all_labels_V4.npy', allow_pickle=True)
+labels_sex = np.load('../output/dataset/all_labels_V4.npy', allow_pickle=True)
 print('labels_sex.shape: ', labels_sex.shape)
 
 female_indices = list(np.where(labels_sex == 1)[0])
@@ -47,7 +49,7 @@ def combined_images():
         output_image = Image.new('L', output_image_size, 255)
 
         for position, (i, j) in enumerate(pairs):
-            filename = f'../80_80_output/data{idx}_{i}_{j}.png'
+            filename = f'../output/80_80_output/data{idx}_{i}_{j}.png'
             img = Image.open(filename)
 
             if img.mode != 'L':
@@ -58,25 +60,32 @@ def combined_images():
 
             output_image.paste(img, (x, y))
 
-        output_image.save(f'../conbined_image/data{idx}_{labels_sex[idx]}.png')
+        output_image.save(f'../output/conbined_image/data{idx}_{labels_sex[idx]}.png')
 
 
 def combined_list():
     pairs = list(combinations(range(6), 2))
     num_datasets = 2525
-    img_list = []
 
-    for idx in range(1):
+    for idx in range(num_datasets):
+        img_list = []
         print(idx)
         for (i, j) in pairs:
-            filename = f'../80_80_output/data{idx}_{i}_{j}.png'
+            filename = f'../output/80_80_output/data{idx}_{i}_{j}.png'
             img = Image.open(filename)
+            img_tensor = ToTensor()(transforms.Grayscale()(img))
 
-            img_list.append(img)
+            img_list.append(img_tensor)
 
         print(len(img_list))
         print(img_list[1].size)
 
+        data = torch.cat(img_list, dim=0)
+        data_np = data.cpu().numpy()
+        print(data_np.shape)
+
+        np.save(f'../output/tensor_data/data{idx}_{labels_sex[idx]}.npy', data_np)
+
 
 # combined_images()
-combined_list()
+# combined_list()
