@@ -71,6 +71,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
         # Training phase
         running_loss = 0.0
+        count = 0
+
         for inputs, labels in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             optimizer.zero_grad()
@@ -79,10 +81,11 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            count += 1
 
-            running_loss += loss.item() * inputs.size(0)
+            running_loss += loss.item()
 
-        epoch_loss = running_loss / train_loader.__len__()
+        epoch_loss = running_loss / count
         train_losses.append(epoch_loss)
 
         scheduler.step()
@@ -91,6 +94,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
         model.eval()
         val_loss = 0.0
         val_corrects = 0
+        count = 0
 
         for inputs, labels in val_loader:
             inputs, labels = inputs.to(device), labels.to(device)
@@ -99,9 +103,10 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 loss = criterion(outputs, labels)
                 _, preds = torch.max(outputs, 1)
                 val_corrects += torch.sum(preds == labels.data)
-                val_loss += loss.item() * inputs.size(0)
+                val_loss += loss.item()
+                count += 1
 
-        epoch_val_loss = val_loss / val_loader.__len__()
+        epoch_val_loss = val_loss / count
         val_losses.append(epoch_val_loss)
 
         val_acc = val_corrects.double() / len(val_dataset)
