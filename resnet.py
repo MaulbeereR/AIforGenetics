@@ -40,6 +40,7 @@ class NPYDataset(Dataset):
 
 dataset = NPYDataset(f'../output/tensor_data/')
 print('dataset length: ', len(dataset))
+print('sample size: ', dataset.get_data_size(0))
 
 train_val, test_dataset = train_test_split(dataset, test_size=test_size, random_state=24)
 train_dataset, val_dataset = train_test_split(train_val, test_size=val_size / (1 - test_size), random_state=24)
@@ -48,7 +49,7 @@ val_loader = DataLoader(val_dataset, batch_size=10, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=10, shuffle=False)
 
 model = models.resnet18(pretrained=True)
-model.conv1 = nn.Conv2d(15, 64, kernel_size=(3, 3), stride=(1, 1), padding=(3, 3), bias=False)
+model.conv1 = nn.Conv2d(15, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 2)
 
