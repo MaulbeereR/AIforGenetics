@@ -18,7 +18,6 @@ from torch.utils.data.dataloader import DataLoader
 from torch.utils.data import Dataset, random_split
 import torch.optim as optim
 from torchvision.transforms import ToTensor
-import torch.nn.functional as F
 from torchvision import transforms
 import random
 import json
