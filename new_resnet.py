@@ -87,7 +87,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
             outputs = model(inputs)
             # loss = criterion(outputs, labels)
-            loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.1, gamma=1.0, reduction='mean')
+            loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.9, gamma=1.0, reduction='mean')
 
             loss.backward()
             optimizer.step()
@@ -113,7 +113,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             with torch.no_grad():
                 outputs = model(inputs)
                 # loss = criterion(outputs, labels)
-                loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.1, gamma=1.0, reduction='mean')
+                loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.9, gamma=1.0, reduction='mean')
 
                 preds = (torch.sigmoid(outputs) > 0.5).float()
 

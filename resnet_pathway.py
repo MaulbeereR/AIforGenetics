@@ -56,7 +56,10 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
         # Training phase
         running_loss = 0.0
+        train_corrects = np.zeros(99)
         count = 0
+        all_preds = []
+        all_labels = []
 
         for inputs, labels in train_loader:
             inputs, labels = inputs.to(device), labels.to(device)
@@ -64,15 +67,39 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
             outputs = model(inputs)
             # loss = criterion(outputs, labels)
-            loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.25, gamma=2.0, reduction='mean')
+            # loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.7, gamma=2.0, reduction='mean')
+
+            loss = 0
+            for i in range(99):
+                alpha = 1 - np.mean(labels[:, i].cpu().numpy())
+                loss += ops.sigmoid_focal_loss(outputs[:, i], labels[:, i], alpha=alpha, gamma=2.0, reduction='mean')
+            loss /= 99
+
             loss.backward()
             optimizer.step()
+
+            preds = (torch.sigmoid(outputs) > 0.5).float()
+
+            train_corrects += (preds == labels).sum(dim=0).cpu().numpy()
             count += 1
+
+            all_preds.append(preds.cpu().numpy())
+            all_labels.append(labels.cpu().numpy())
 
             running_loss += loss.item()
 
         epoch_loss = running_loss / count
         train_losses.append(epoch_loss)
+
+        all_preds = np.concatenate(all_preds, axis=0)
+        all_labels = np.concatenate(all_labels, axis=0)
+
+        train_precision = precision_score(all_labels, all_preds, average='weighted', zero_division=0)
+        train_recall = recall_score(all_labels, all_preds, average='weighted', zero_division=0)
+        train_f1 = f1_score(all_labels, all_preds, average='weighted', zero_division=0)
+
+        print(
+            f'Epoch {epoch + 1}/{num_epochs}, train Precision: {train_precision:.4f}, train Recall: {train_recall:.4f}, train F1 Score: {train_f1:.4f}')
 
         scheduler.step()
 
@@ -89,7 +116,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             with torch.no_grad():
                 outputs = model(inputs)
                 # loss = criterion(outputs, labels)
-                loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.25, gamma=2.0, reduction='mean')
+                loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.7, gamma=2.0, reduction='mean')
+
                 preds = (torch.sigmoid(outputs) > 0.5).float()
 
                 val_corrects += (preds == labels).sum(dim=0).cpu().numpy()
@@ -136,6 +164,12 @@ def evaluate_model(model, test_loader):
 
     all_preds = np.concatenate(all_preds, axis=0)
     all_labels = np.concatenate(all_labels, axis=0)
+
+    print(np.sum(all_preds, axis=0))
+    print(np.sum(all_labels, axis=0))
+
+    print(all_preds.shape)
+    print(all_labels.shape)
 
     precision_per_label = precision_score(all_labels, all_preds, average=None, zero_division=0)
     recall_per_label = recall_score(all_labels, all_preds, average=None, zero_division=0)
@@ -186,9 +220,10 @@ print('sample size: ', dataset.get_data_size(0))
 
 train_val, test_dataset = train_test_split(dataset, test_size=test_size, random_state=24)
 train_dataset, val_dataset = train_test_split(train_val, test_size=val_size / (1 - test_size), random_state=24)
-train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=10, shuffle=False)
-test_loader = DataLoader(test_dataset, batch_size=10, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+test_loader = DataLoader(test_dataset, batch_size=32
+                         , shuffle=False)
 
 model = models.resnet18(pretrained=True)
 model.conv1 = nn.Conv2d(15, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
