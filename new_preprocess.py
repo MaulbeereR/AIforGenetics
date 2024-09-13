@@ -27,7 +27,7 @@ import math
 from itertools import combinations
 import common
 
-unique_pathways = ['R-HSA-141430', 'R-HSA-3270619', 'R-HSA-912526', 'R-HSA-9617324', 'R-HSA-174048', 'R-HSA-936837', 'R-HSA-9013149', 'R-HSA-179409', 'R-HSA-9687136', 'R-HSA-9679191', 'R-HSA-168638', 'R-HSA-8853884', 'R-HSA-176412', 'R-HSA-176407', 'R-HSA-1266695', 'R-HSA-71384', 'R-HSA-9020558']
+unique_pathways = ['R-HSA-9013149','R-HSA-9679191','R-HSA-912526','R-HSA-3270619','R-HSA-141430','R-HSA-174048','R-HSA-176407','R-HSA-176412','R-HSA-179409','R-HSA-8853884','R-HSA-9687136','R-HSA-1266695','R-HSA-936837','R-HSA-168638','R-HSA-71384','R-HSA-9020558','R-HSA-9617324']
 input_path = '../fcs_data_V2/'
 metadata = pd.read_csv('../filtered_FCS_data_2024-03-07_V4_updated.csv')
 
@@ -71,6 +71,8 @@ def gen_data():
     np.save(data_filename, data)
     np.save(label_filename, labels)
 
+
+# gen_data()
 
 data = np.load('../output/new/dataset/new_all_data.npy', allow_pickle=True)
 labels = np.load('../output/new/dataset/new_all_labels.npy', allow_pickle=True)

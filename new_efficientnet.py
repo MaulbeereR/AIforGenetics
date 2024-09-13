@@ -6,20 +6,21 @@ import os
 import torch.nn as nn
 import torchvision.models as models
 import torchvision.ops as ops
-from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_curve
+from sklearn.metrics import precision_score, recall_score, f1_score
 import torch.optim as optim
 from torch.optim import lr_scheduler
 from sklearn.model_selection import train_test_split
 import copy
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_curve, precision_recall_curve, auc
 
 
 train_size = 0.8
 val_size = 0.2
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-labels = np.load('../output/dataset/new_labels.npy', allow_pickle=True)
+labels = np.load('../output/new/dataset/new_all_labels.npy', allow_pickle=True)
 print('labels shape: ', labels.shape)
 
 
@@ -35,7 +36,7 @@ class NPYDataset(Dataset):
     def __getitem__(self, idx):
         file_path = os.path.join(self.directory, self.filenames[idx])
         data = np.load(file_path)
-        label = torch.tensor(self.labels[idx], dtype=torch.float32)
+        label = torch.tensor(self.labels[idx, :3], dtype=torch.float32)
         return torch.tensor(data, dtype=torch.float32), label
 
     def get_data_size(self, idx):
@@ -57,7 +58,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     for epoch in range(num_epochs):
         model.train()
 
-        # Training phase
         running_loss = 0.0
         count = 0
         all_preds = []
@@ -69,13 +69,12 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
             outputs = model(inputs)
 
-            loss = criterion(outputs, labels)
-
+            loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.93, gamma=2.0, reduction='mean')
             # loss = 0
-            # for i in range(99):
+            # for i in range(3):
             #     alpha = 1 - np.mean(labels[:, i].cpu().numpy())
             #     loss += ops.sigmoid_focal_loss(outputs[:, i], labels[:, i], alpha=alpha, gamma=2.0, reduction='mean')
-            # loss /= 99
+            # loss /= 3
 
             loss.backward()
             optimizer.step()
@@ -116,13 +115,12 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             with torch.no_grad():
                 outputs = model(inputs)
 
-                loss = criterion(outputs, labels)
-
+                loss = ops.sigmoid_focal_loss(outputs, labels, alpha=0.93, gamma=2.0, reduction='mean')
                 # loss = 0
-                # for i in range(99):
+                # for i in range(3):
                 #     alpha = 1 - np.mean(labels[:, i].cpu().numpy())
                 #     loss += ops.sigmoid_focal_loss(outputs[:, i], labels[:, i], alpha=alpha, gamma=2.0, reduction='mean')
-                # loss /= 99
+                # loss /= 3
 
                 preds = (torch.sigmoid(outputs) > 0.5).float()
 
@@ -183,7 +181,7 @@ def evaluate_on_validation(model, val_loader):
     auroc_per_label = roc_auc_score(all_labels, all_preds, average=None)
 
     metrics = {
-        'Label': list(range(1, 100)),
+        'Label': list(range(1, 4)),
         'Precision': precision_per_label,
         'Recall': recall_per_label,
         'F1 Score': f1_per_label,
@@ -192,28 +190,28 @@ def evaluate_on_validation(model, val_loader):
     }
 
     df_metrics = pd.DataFrame(metrics)
-    df_metrics.to_csv('../output/meeting_result/label_metrics_bce.csv', index=False)
+    # df_metrics.to_csv('../output/meeting_result/new_efficient_1.csv', index=False)
 
 
-dataset = NPYDataset(f'../output/tensor_data_norm/', labels)
+dataset = NPYDataset(f'../output/new/tensor_data/', labels)
 print('dataset length: ', len(dataset))
 print('sample size: ', dataset.get_data_size(0))
 
 
 train_dataset, val_dataset = train_test_split(dataset, test_size=val_size, random_state=24)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 
-model = models.resnet18(pretrained=True)
-model.conv1 = nn.Conv2d(15, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
-num_ftrs = model.fc.in_features
-model.fc = nn.Sequential(
+model = models.efficientnet_b2(pretrained=True)
+model.features[0][0] = nn.Conv2d(15, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+num_ftrs = model.classifier[1].in_features
+model.classifier = nn.Sequential(
     nn.Dropout(0.5),
-    nn.Linear(num_ftrs, 99)
+    nn.Linear(num_ftrs, 3)
 )
 
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.002, momentum=0.9, weight_decay=1e-4)
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 model = model.to(device)
@@ -238,3 +236,46 @@ plt.title('Validation AUROC Per Epoch')
 plt.legend()
 plt.show()
 
+
+def plot_roc_pr_curves(model, val_loader):
+    model.eval()
+    all_preds = []
+    all_labels = []
+
+    for inputs, labels in val_loader:
+        inputs, labels = inputs.to(device), labels.to(device)
+        with torch.no_grad():
+            outputs = model(inputs)
+            preds = torch.sigmoid(outputs)
+            all_preds.append(preds.cpu().numpy())
+            all_labels.append(labels.cpu().numpy())
+
+    all_preds = np.concatenate(all_preds, axis=0)
+    all_labels = np.concatenate(all_labels, axis=0)
+
+    for i in range(3):
+        fpr, tpr, roc_thresholds = roc_curve(all_labels[:, i], all_preds[:, i])
+        precision, recall, pr_thresholds = precision_recall_curve(all_labels[:, i], all_preds[:, i])
+
+        roc_auc = auc(fpr, tpr)
+        pr_auc = auc(recall, precision)
+
+        plt.figure()
+        plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f}) for label {i + 1}')
+        plt.plot([0, 1], [0, 1], linestyle='--', color='gray')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title(f'ROC Curve for label {i + 1}')
+        plt.legend(loc='lower right')
+        plt.show()
+
+        plt.figure()
+        plt.plot(recall, precision, label=f'PR curve (area = {pr_auc:.2f}) for label {i + 1}')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title(f'Precision-Recall Curve for label {i + 1}')
+        plt.legend(loc='lower left')
+        plt.show()
+
+
+plot_roc_pr_curves(trained_model, val_loader)

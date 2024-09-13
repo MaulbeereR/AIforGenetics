@@ -12,6 +12,7 @@ from torch.optim import lr_scheduler
 from sklearn.model_selection import train_test_split
 import copy
 import matplotlib.pyplot as plt
+from sklearn.metrics import roc_auc_score
 
 
 train_size = 0.7
