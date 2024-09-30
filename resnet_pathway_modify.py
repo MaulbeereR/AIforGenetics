@@ -19,7 +19,7 @@ train_size = 0.8
 val_size = 0.2
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-labels = np.load('../output/dataset/new_labels.npy', allow_pickle=True)
+labels = np.load('../output/dataset/labels_30000.npy', allow_pickle=True)
 print('labels shape: ', labels.shape)
 
 
@@ -69,13 +69,13 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
             outputs = model(inputs)
 
-            loss = criterion(outputs, labels)
+            # loss = criterion(outputs, labels)
 
-            # loss = 0
-            # for i in range(99):
-            #     alpha = 1 - np.mean(labels[:, i].cpu().numpy())
-            #     loss += ops.sigmoid_focal_loss(outputs[:, i], labels[:, i], alpha=alpha, gamma=2.0, reduction='mean')
-            # loss /= 99
+            loss = 0
+            for i in range(99):
+                alpha = 1 - np.mean(labels[:, i].cpu().numpy())
+                loss += ops.sigmoid_focal_loss(outputs[:, i], labels[:, i], alpha=alpha, gamma=2.0, reduction='mean')
+            loss /= 99
 
             loss.backward()
             optimizer.step()
@@ -116,13 +116,13 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             with torch.no_grad():
                 outputs = model(inputs)
 
-                loss = criterion(outputs, labels)
+                # loss = criterion(outputs, labels)
 
-                # loss = 0
-                # for i in range(99):
-                #     alpha = 1 - np.mean(labels[:, i].cpu().numpy())
-                #     loss += ops.sigmoid_focal_loss(outputs[:, i], labels[:, i], alpha=alpha, gamma=2.0, reduction='mean')
-                # loss /= 99
+                loss = 0
+                for i in range(99):
+                    alpha = 1 - np.mean(labels[:, i].cpu().numpy())
+                    loss += ops.sigmoid_focal_loss(outputs[:, i], labels[:, i], alpha=alpha, gamma=2.0, reduction='mean')
+                loss /= 99
 
                 preds = (torch.sigmoid(outputs) > 0.5).float()
 
@@ -192,10 +192,10 @@ def evaluate_on_validation(model, val_loader):
     }
 
     df_metrics = pd.DataFrame(metrics)
-    df_metrics.to_csv('../output/meeting_result/label_metrics_bce.csv', index=False)
+    df_metrics.to_csv('../output/label_metrics_resnet240.csv', index=False)
 
 
-dataset = NPYDataset(f'../output/tensor_data_norm/', labels)
+dataset = NPYDataset(f'../output/240tensor_data/', labels)
 print('dataset length: ', len(dataset))
 print('sample size: ', dataset.get_data_size(0))
 
@@ -213,7 +213,7 @@ model.fc = nn.Sequential(
 )
 
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.002, momentum=0.9, weight_decay=1e-4)
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9, weight_decay=1e-4)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 model = model.to(device)

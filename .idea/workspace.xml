@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d36698a8-e40a-4bed-9815-11ac53eb2217" name="Changes" comment="try to improve...">
-      <change afterPath="$PROJECT_DIR$/mobilenet.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/new_efficientnet.py" afterDir="false" />
+    <list default="true" id="d36698a8-e40a-4bed-9815-11ac53eb2217" name="Changes" comment="update">
+      <change afterPath="$PROJECT_DIR$/tensor_data240.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/efficientnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/efficientnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/new_preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/new_preprocess.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/new_resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/new_resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pathway_kmeans.py" beforeDir="false" afterPath="$PROJECT_DIR$/pathway_kmeans.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resnet_multi.py" beforeDir="false" afterPath="$PROJECT_DIR$/resnet_multi.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resnet_pathway.py" beforeDir="false" afterPath="$PROJECT_DIR$/resnet_pathway.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/label_preprocess.py" beforeDir="false" afterPath="$PROJECT_DIR$/label_preprocess.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resnet_pathway_modify.py" beforeDir="false" afterPath="$PROJECT_DIR$/resnet_pathway_modify.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,8 +47,8 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager" selected="Python.new_efficientnet">
-    <configuration name="1" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.efficientnet">
+    <configuration name="efficientnet" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Code" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -65,7 +60,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/1.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/efficientnet.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -74,7 +69,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="label_preprocess" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Code" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -86,7 +81,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/label_preprocess.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -116,7 +111,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="new_preprocess" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="resnet_pathway_modify" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Code" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -128,7 +123,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/new_preprocess.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/resnet_pathway_modify.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -137,7 +132,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="pathway_kmeans" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="tensor_data240" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Code" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -149,7 +144,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pathway_kmeans.py" />
+      <option name="SCRIPT_NAME" value="E:\AI for Genetics\Code\tensor_data240.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -160,11 +155,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.efficientnet" />
+        <item itemvalue="Python.resnet_pathway_modify" />
+        <item itemvalue="Python.tensor_data240" />
+        <item itemvalue="Python.label_preprocess" />
         <item itemvalue="Python.new_efficientnet" />
-        <item itemvalue="Python.pathway_kmeans" />
-        <item itemvalue="Python.1" />
-        <item itemvalue="Python.2" />
-        <item itemvalue="Python.new_preprocess" />
       </list>
     </recent_temporary>
   </component>
@@ -296,7 +291,14 @@
       <option name="project" value="LOCAL" />
       <updated>1724376821987</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="update">
+      <created>1726187703322</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1726187703322</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -327,6 +329,7 @@
     <MESSAGE value="predict labels" />
     <MESSAGE value="loss update" />
     <MESSAGE value="try to improve..." />
-    <option name="LAST_COMMIT_MESSAGE" value="try to improve..." />
+    <MESSAGE value="update" />
+    <option name="LAST_COMMIT_MESSAGE" value="update" />
   </component>
 </project>

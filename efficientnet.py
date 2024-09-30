@@ -19,7 +19,7 @@ train_size = 0.8
 val_size = 0.2
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-labels = np.load('../output/dataset/new_labels.npy', allow_pickle=True)
+labels = np.load('../output/dataset/labels_30000.npy', allow_pickle=True)
 print('labels shape: ', labels.shape)
 
 
@@ -185,17 +185,17 @@ def evaluate_on_validation(model, val_loader):
     }
 
     df_metrics = pd.DataFrame(metrics)
-    df_metrics.to_csv('../output/meeting_result/label_metrics_efficient_1.csv', index=False)
+    df_metrics.to_csv('../output/label_metrics_efficient_240.csv', index=False)
 
 
-dataset = NPYDataset(f'../output/tensor_data/', labels)
+dataset = NPYDataset(f'../output/240tensor_data/', labels)
 print('dataset length: ', len(dataset))
 print('sample size: ', dataset.get_data_size(0))
 
 
 train_dataset, val_dataset = train_test_split(dataset, test_size=val_size, random_state=24)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
 
 model = models.efficientnet_b2(pretrained=True)
 model.features[0][0] = nn.Conv2d(15, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
@@ -206,7 +206,7 @@ model.classifier = nn.Sequential(
 )
 
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.15, momentum=0.9, weight_decay=1e-4)
+optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 model = model.to(device)

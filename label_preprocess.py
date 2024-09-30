@@ -40,6 +40,7 @@ def process_raw_data(cell_count, input_path, metadata, sample_count):
 
     all_data_list = []
     all_labels_list = []
+    all_fidx_list = []
 
     for f_idx, fcs_filename in enumerate(input_filelist):
 
@@ -62,33 +63,42 @@ def process_raw_data(cell_count, input_path, metadata, sample_count):
                 if trimmed_data.shape == (cell_count, 6):
                     all_data_list.append(trimmed_data)
                     all_labels_list.append(label)
+                    all_fidx_list.append(f_idx)
 
     all_data = np.stack(all_data_list)
     all_labels = np.stack(all_labels_list)
+    all_fidx_list = np.stack(all_fidx_list)
 
-    return all_data, all_labels
+    return all_data, all_labels, all_fidx_list
 
 
-data_2D_filename = '../output/dataset/new_data.npy'
-label_filename = '../output/dataset/new_labels.npy'
+data_2D_filename = '../output/dataset/data_30000.npy'
+label_filename = '../output/dataset/labels_30000.npy'
+idx_filename = '../output/dataset/idx_30000.npy'
 
 num_classes = 2
 cell_count = 30000
 ch_count = 6
 
-all_data, all_labels = process_raw_data(cell_count=cell_count, input_path=input_path, metadata=metadata,
+all_data, all_labels, all_idx = process_raw_data(cell_count=cell_count, input_path=input_path, metadata=metadata,
                                         sample_count=10000)
 np.save(data_2D_filename, all_data)
 np.save(label_filename, all_labels)
+np.save(idx_filename, all_idx)
 
-data = np.load('../output/dataset/new_data.npy', allow_pickle=True)
-labels = np.load('../output/dataset/new_labels.npy', allow_pickle=True)
+data = np.load('../output/dataset/data_30000.npy', allow_pickle=True)
+labels = np.load('../output/dataset/labels_30000.npy', allow_pickle=True)
+idx = np.load('../output/dataset/idx_30000.npy', allow_pickle=True)
+
+
 
 print('data.shape: ', data.shape)
 print('labels.shape: ', labels.shape)
+print('idx.shape: ', idx.shape)
 
-data_old = np.load('../output/dataset/all_data_V4.npy', allow_pickle=True)
-print('data_old.shape: ', data_old.shape)
+if all([sample.shape[0] == cell_count for sample in data]):
+    print("All samples in all_data have exactly 30000 cells.")
+else:
+    print("Some samples in all_data do not have 30000 cells.")
 
-print(np.array_equal(data, data_old))
 
