@@ -23,6 +23,7 @@ import random
 import json
 import os
 import math
+import gc
 
 from itertools import combinations
 
@@ -32,17 +33,21 @@ print(f'Using device: {device}')
 scattering_channels = ['FSC-A', 'FSC-H', 'FSC-W', 'SSC-A', 'SSC-H', 'SSC-W']
 antibody_channels = ['IgM', 'IgD', 'B220', 'CD44', 'CD3', 'CD4']
 
-raw_data = np.load('../output/dataset/data_30000.npy', allow_pickle=True)
-labels = np.load('../output/dataset/labels_30000.npy', allow_pickle=True)
-idx = np.load('../output/dataset/idx_30000.npy', allow_pickle=True)
-output_path = '../output/240tensor_data/'
+input_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'AIforGenetics')
+data_filename = os.path.join(os.path.expanduser(input_path), 'output/data.npy')
+label_filename = os.path.join(os.path.expanduser(input_path), 'output/labels.npy')
+idx_filename = os.path.join(os.path.expanduser(input_path), 'output/idx.npy')
+raw_data = np.load(data_filename, allow_pickle=True)
+labels = np.load(label_filename, allow_pickle=True)
+idx = np.load(idx_filename, allow_pickle=True)
+output_path = os.path.join(os.path.expanduser(input_path), 'output/480tensor_data')
 
 print('raw_data.shape: ', raw_data.shape)  # shape: (2525, 30000, 6)
-print('labels.shape: ', labels.shape)      # shape: (2525, 17)
+print('labels.shape: ', labels.shape)      # shape: (2525, 99)
 print('idx.shape: ', idx.shape)            # shape: (2525, )
 
 
-def generate_tensored_data(data, n, resolution=240):
+def generate_tensored_data(data, n, resolution=480):
     pairs = list(combinations(range(6), 2))
     img_list = []
 
@@ -75,12 +80,19 @@ def generate_tensored_data(data, n, resolution=240):
 
         img_list.append(img_tensor)
         plt.close(fig)
+        del fig, ax, img_array, img
+        gc.collect()
 
     data_tensor = torch.cat(img_list, dim=0).to(device)
+    del img_list
+    gc.collect()
     return data_tensor
 
 
-for num in range(len(raw_data)):
+for num in range(2205, 2525):
     tensored_data = generate_tensored_data(raw_data[num], num)
     np.save(f'{output_path}/data{idx[num]}.npy', tensored_data.cpu().numpy())
-    print(f'Dataset {num} processed with shape {tensored_data.size()}')
+    torch.cuda.empty_cache()
+    print(f'Dataset {num} processed with shape {tensored_data.size()} with index {idx[num]}')
+    del tensored_data
+    

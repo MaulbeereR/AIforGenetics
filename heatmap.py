@@ -28,8 +28,15 @@ from itertools import combinations
 scattering_channels = ['FSC-A', 'FSC-H', 'FSC-W', 'SSC-A', 'SSC-H', 'SSC-W']
 antibody_channels = ['IgM', 'IgD', 'B220', 'CD44', 'CD3', 'CD4']
 
-raw_data = np.load('../dataset/all_data_V4.npy', allow_pickle=True)
-output_path = '../output/80_80_output/'
+input_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'AIforGenetics')
+data_filename = os.path.join(os.path.expanduser(input_path), 'output/data.npy')
+label_filename = os.path.join(os.path.expanduser(input_path), 'output/labels.npy')
+idx_filename = os.path.join(os.path.expanduser(input_path), 'output/idx.npy')
+raw_data = np.load(data_filename, allow_pickle=True)
+labels = np.load(label_filename, allow_pickle=True)
+idx = np.load(idx_filename, allow_pickle=True)
+output_path = os.path.join(os.path.expanduser(input_path), 'output')
+
 
 print('raw_data.shape: ', raw_data.shape)
 # shape: (2525, 30000, 6)
@@ -50,7 +57,8 @@ def plot_heatmap(data, n, antibody_x, antibody_y, res):
     z = interpn((0.5 * (x_e[1:] + x_e[:-1]), 0.5 * (y_e[1:] + y_e[:-1])), data, np.vstack([x, y]).T, method="splinef2d",
                 bounds_error=False)
 
-    z[np.where(np.isnan(z))] = 0.0
+    # z[np.where(np.isnan(z))] = 0.0
+    z[np.isnan(z)] = 0.0
 
     idx = z.argsort()
     x, y, z = x[idx], y[idx], z[idx]
@@ -69,7 +77,8 @@ def plot_heatmap(data, n, antibody_x, antibody_y, res):
 
 
 pairs = list(combinations(range(6), 2))
-for num in range(len(raw_data)):
+# for num in range(len(raw_data)):
+for num in range(1):
     for i, j in pairs:
         plot_heatmap(raw_data[num], num, i, j, 80)
     print(num)

@@ -19,9 +19,6 @@ train_size = 0.8
 val_size = 0.2
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-labels = np.load('../output/dataset/labels_30000.npy', allow_pickle=True)
-print('labels shape: ', labels.shape)
-
 
 class NPYDataset(Dataset):
     def __init__(self, directory, labels):
@@ -192,17 +189,24 @@ def evaluate_on_validation(model, val_loader):
     }
 
     df_metrics = pd.DataFrame(metrics)
-    df_metrics.to_csv('../output/label_metrics_resnet240.csv', index=False)
+    df_metrics.to_csv(os.path.join(os.path.expanduser('~'), 'Desktop',
+                                    'AIforGenetics', '/output/label_metrics_resnet480.csv', index=False))
 
 
-dataset = NPYDataset(f'../output/240tensor_data/', labels)
+input_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'AIforGenetics')
+label_filename = os.path.join(os.path.expanduser(input_path), 'output/labels.npy')
+labels = np.load(label_filename, allow_pickle=True)
+print('labels shape: ', labels.shape)
+
+data_path = os.path.join(os.path.expanduser(input_path), 'output/480tensor_data')
+dataset = NPYDataset(data_path, labels)
 print('dataset length: ', len(dataset))
 print('sample size: ', dataset.get_data_size(0))
 
 
 train_dataset, val_dataset = train_test_split(dataset, test_size=val_size, random_state=24)
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
 
 model = models.resnet18(pretrained=True)
 model.conv1 = nn.Conv2d(15, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
@@ -218,7 +222,9 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 model = model.to(device)
 
+print('Training model...')
 trained_model, train_losses, val_losses, f1_scores, auroc_scores = train_model(model, criterion, optimizer, exp_lr_scheduler, num_epochs=25)
+print('Training complete!')
 evaluate_on_validation(trained_model, val_loader)
 
 plt.figure(figsize=(10, 5))
