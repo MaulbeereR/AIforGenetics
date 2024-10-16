@@ -13,6 +13,8 @@ from sklearn.model_selection import train_test_split
 import copy
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score
+from torch.utils.data import DataLoader, SubsetRandomSampler
+from sklearn.model_selection import StratifiedKFold
 
 
 train_size = 0.8
@@ -31,9 +33,10 @@ class NPYDataset(Dataset):
 
     def __getitem__(self, idx):
         file_path = os.path.join(self.directory, self.filenames[idx])
-        data = np.load(file_path)
+        data = np.load(file_path) # shape: (15, 3, 480, 480)
+        data_reshaped = data.reshape(45, 480, 480)
         label = torch.tensor(self.labels[idx], dtype=torch.float32)
-        return torch.tensor(data, dtype=torch.float32), label
+        return torch.tensor(data_reshaped, dtype=torch.float32), label
 
     def get_data_size(self, idx):
         file_path = os.path.join(self.directory, self.filenames[idx])
@@ -189,27 +192,38 @@ def evaluate_on_validation(model, val_loader):
     }
 
     df_metrics = pd.DataFrame(metrics)
-    df_metrics.to_csv(os.path.join(os.path.expanduser('~'), 'Desktop',
-                                    'AIforGenetics', '/output/label_metrics_resnet480.csv', index=False))
+    df_metrics.to_csv(os.path.join('/mnt', 'bigdisk', 'home', 'rongyu','output', 'label_metrics_resnet480.csv'), index=False)
 
 
 input_path = os.path.join(os.path.expanduser('~'), 'Desktop', 'AIforGenetics')
+output_folder = os.path.join('/mnt', 'bigdisk', 'home', 'rongyu')
+
 label_filename = os.path.join(os.path.expanduser(input_path), 'output/labels.npy')
 labels = np.load(label_filename, allow_pickle=True)
 print('labels shape: ', labels.shape)
 
-data_path = os.path.join(os.path.expanduser(input_path), 'output/480tensor_data')
+data_path = os.path.join(os.path.expanduser(output_folder), 'output/RGB_tensor_480')
 dataset = NPYDataset(data_path, labels)
 print('dataset length: ', len(dataset))
 print('sample size: ', dataset.get_data_size(0))
 
+dataset_size = len(dataset)
+indices = list(range(dataset_size))
+np.random.shuffle(indices)
 
-train_dataset, val_dataset = train_test_split(dataset, test_size=val_size, random_state=24)
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
+split = int(np.floor(val_size * dataset_size))
+train_indices, val_indices = indices[split:], indices[:split]
+train_sampler = SubsetRandomSampler(train_indices)
+val_sampler = SubsetRandomSampler(val_indices)
+train_loader = DataLoader(dataset, batch_size=16, sampler=train_sampler)
+val_loader = DataLoader(dataset, batch_size=16, sampler=val_sampler)
+
+# train_dataset, val_dataset = train_test_split(dataset, test_size=val_size, random_state=24)
+# train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
+# val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
 
 model = models.resnet18(pretrained=True)
-model.conv1 = nn.Conv2d(15, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+model.conv1 = nn.Conv2d(45, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Sequential(
     nn.Dropout(0.5),

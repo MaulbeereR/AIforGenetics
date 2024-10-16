@@ -66,7 +66,7 @@ def plot_heatmap(data, n, antibody_x, antibody_y, res):
     # norm = Normalize(vmin=np.min(z), vmax=np.max(z) * 0.25)
     # ax.scatter(x, y, c=z, s=0.2, norm=norm)
 
-    ax.scatter(x, y, c=z, s=0.2, cmap='gray')
+    ax.scatter(x, y, c=z, s=0.2)
 
     ax.set_axis_off()
 
